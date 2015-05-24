@@ -1,0 +1,18 @@
+<html>
+<head>
+  <script type="text/javascript">
+    window.addEventListener('message', function(message) {
+      var disqusScript = document.createElement('script');
+      disqusScript.setAttribute('src', 'https://a.disquscdn.com/next/embed/lounge.load.'+message.data+'.js');
+      disqusScript.addEventListener('load', function() {
+        window.require(['lounge/paths'], function(paths) {
+          message.source.postMessage({ msg: 'disqusCSS', href: paths.STYLES }, '*');
+        });
+      }, false);
+      document.getElementsByTagName('head')[0].appendChild(disqusScript);
+    }, false);
+  </script>
+</head>
+<body>
+</body>
+<html>

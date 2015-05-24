@@ -85,6 +85,6 @@ gulp.task('browser-sync', [ 'webpack-embed' ], function() {
     startPath: 'html/example.html'
   });
 });
- 
+
 gulp.task('default', [ 'browser-sync' ], function() {
 });

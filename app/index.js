@@ -3,6 +3,7 @@ require('bootstrap');
 
 let React = require('react');
 let Fluxxor = require('fluxxor');
+let url = require('url');
 let Comments = require('./components/Comments');
 let Actions = require('./actions/Actions');
 
@@ -15,7 +16,8 @@ let flux = new Fluxxor.Flux(stores, Actions);
 
 let config = JSON.parse(atob(frameElement.getAttribute('data-config')));
 
-flux.actions.updateUrl({ url: config.url, config: { reddit: config.reddit, disqus: config.disqus }});
+let parsedUrl = url.parse(config.url);
+flux.actions.updateUrl({ url: parsedUrl.hostname+parsedUrl.pathname, config: { reddit: config.reddit, disqus: config.disqus }});
 if (process.env.NODE_ENV !== 'test') {
   React.render(
     <Comments flux={flux}/>,

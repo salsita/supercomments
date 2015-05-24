@@ -44,7 +44,7 @@ window.disqus_identifier = supercommentsConfig.disqus.identifier;
             color: 'rgba(0, 39, 59, 0.2)'
           }
         }, [
-          'SuperComments ',
+          'Supercomments ',
           h('a', 'web app development', {
             style: { 'text-decoration': 'underline', color: 'inherit' },
             href: 'https://www.salsitasoft.com/mobile-and-web-apps/solutions/web-apps',
@@ -66,31 +66,6 @@ window.disqus_identifier = supercommentsConfig.disqus.identifier;
       ), div
     );
 
-    // Inject the HTML
-    var iframe = document.getElementById('supercomments-frame');
-    var doc = iframe.contentWindow.document;
-    doc.open('text/html');
-    doc.write(require('./app/html/reddit.html'));
-    doc.close();
-
-    // Inject the stylesheet(s)
-    var head = doc.getElementsByTagName('head')[0];
-    var style = doc.createElement('style');
-    style.appendChild(doc.createTextNode(require('raw!./node_modules/react-simpletabs/dist/react-simpletabs.css')));
-    head.appendChild(style);
-    style = doc.createElement('style');
-    style.appendChild(doc.createTextNode(require('raw!./app/css/simpletabs.css')));
-    head.appendChild(style);
-
-    // Inject the scripts
-    var script = doc.createElement('script');
-    script.appendChild(doc.createTextNode(require('raw!./node_modules/jquery/dist/jquery.min.js')));
-    head.appendChild(script);
-
-    script = doc.createElement('script');
-    script.appendChild(doc.createTextNode(require('raw!./dist/js/supercomments{{suffix}}.js')));
-    head.appendChild(script);
-
     var disqusCount = document.getElementById('disqusCount');
     function getDisqusCount() {
       var countMatch = disqusCount.textContent.match(/[0-9]+/);
@@ -109,6 +84,8 @@ window.disqus_identifier = supercommentsConfig.disqus.identifier;
       }
     });
     disqusCountObserver.observe(disqusCount, { childList: true });
+
+    var iframe = document.getElementById('supercomments-frame');
 
     // Set up callback for new Disqus comments
     function onNewDisqusComment() {
@@ -134,11 +111,69 @@ window.disqus_identifier = supercommentsConfig.disqus.identifier;
     disqusScript.src = '//' + supercommentsConfig.disqus.forum + '.disqus.com/embed.js';
     (document.getElementsByTagName('head')[0] || document.body).appendChild(disqusScript);
 
-    // Watch for Disqus visibility messages from the frame
     var disqus = document.getElementById('disqus_thread');
+    var doc = iframe.contentDocument;
+
+    // Get the URL of the Disqus CSS file when the Disqus frame is injected
+    var disqusDivObserver = new MutationObserver(function() {
+      // Let the frame know when the Disqus count changed
+      if (disqus.firstChild) {
+        disqusDivObserver.disconnect();
+
+        var src = disqus.firstChild.src;
+        var versionMatch = src.match(/&version=([^&]+)&/);
+        if (versionMatch && (versionMatch.length > 1)) {
+          // Inject the HTML
+          doc.open('text/html');
+          doc.write(require('./app/html/reddit.html'));
+          doc.close();
+
+          var head = doc.getElementsByTagName('head')[0];
+
+          // Get the Disqus CSS path by injecting their loader
+          var disqusVersion = versionMatch[1];
+          if (disqusVersion) {
+            var disqusCssFrame = document.createElement('iframe');
+            document.documentElement.appendChild(disqusCssFrame);
+            var disqusCssDoc = disqusCssFrame.contentDocument;
+            disqusCssDoc.open('text/html');
+            disqusCssDoc.write(require('./app/html/getDisqusCSS.html'));
+            disqusCssDoc.close();
+            disqusCssFrame.contentWindow.postMessage(disqusVersion, '*');
+          }
+
+          // Inject the stylesheet(s)
+          var style = doc.createElement('style');
+          style.appendChild(doc.createTextNode(require('raw!./node_modules/react-simpletabs/dist/react-simpletabs.css')));
+          head.appendChild(style);
+          style = doc.createElement('style');
+          style.appendChild(doc.createTextNode(require('raw!./app/css/simpletabs.css')));
+          head.appendChild(style);
+
+          // Inject the scripts
+          var script = doc.createElement('script');
+          script.appendChild(doc.createTextNode(require('raw!./node_modules/jquery/dist/jquery.min.js')));
+          head.appendChild(script);
+
+          script = doc.createElement('script');
+          script.appendChild(doc.createTextNode(require('raw!./dist/js/supercomments{{suffix}}.js')));
+          head.appendChild(script);
+        }
+      }
+    });
+    disqusDivObserver.observe(disqus, { childList: true });
+
+    // Watch for Disqus visibility messages from the frame
     window.addEventListener('message', function(message) {
       if (typeof(message.data) === 'object' && ('msg' in message.data)) {
-        if (message.data.msg === 'showDisqus') {
+        if (message.data.msg === 'disqusCSS') {
+          var link = doc.createElement('link');
+          link.setAttribute('rel', 'stylesheet');
+          link.setAttribute('href', message.data.href);
+          link.setAttribute('media', 'all');
+          doc.getElementsByTagName('head')[0].appendChild(link);
+        }
+        else if (message.data.msg === 'showDisqus') {
           disqus.style.display = 'initial';
           message.source.postMessage({ msg: 'onDisqusShown' }, '*');
         }
