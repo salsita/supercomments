@@ -40,25 +40,25 @@ window.disqus_identifier = supercommentsConfig.disqus.identifier;
             'border-top': '2px solid',
             padding: '24px 0 10px',
             'font-family': 'Helvetica Neue",arial,sans-serif',
-            'font-size': '11pt',
+            'font-size': '12px',
             color: 'rgba(0, 39, 59, 0.2)'
           }
         }, [
           'Supercomments ',
           h('a', 'web app development', {
-            style: { 'text-decoration': 'underline', color: 'inherit' },
+            style: { 'padding-left': '0px', 'text-decoration': 'underline', color: 'inherit' },
             href: 'https://www.salsitasoft.com/mobile-and-web-apps/solutions/web-apps',
             target: '_blank'
           }),
           ' by the ',
           h('a', 'React developers', {
-            style: { 'text-decoration': 'underline', color: 'inherit' },
+            style: { 'padding-left': '0px', 'text-decoration': 'underline', color: 'inherit' },
             href: 'https://www.salsitasoft.com/javascript-engineers/full-stack-development/react',
             target: '_blank'
           }),
           ' of ',
           h('a', 'Salsita Software', {
-            style: { 'text-decoration': 'underline', color: 'inherit' },
+            style: { 'padding-left': '0px', 'text-decoration': 'underline', color: 'inherit' },
             href: 'https://www.salsitasoft.com',
             target: '_blank'
           })
@@ -134,6 +134,7 @@ window.disqus_identifier = supercommentsConfig.disqus.identifier;
           var disqusVersion = versionMatch[1];
           if (disqusVersion) {
             var disqusCssFrame = document.createElement('iframe');
+            disqusCssFrame.setAttribute('style', 'display: none');
             document.documentElement.appendChild(disqusCssFrame);
             var disqusCssDoc = disqusCssFrame.contentDocument;
             disqusCssDoc.open('text/html');
